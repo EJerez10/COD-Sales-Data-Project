@@ -1,0 +1,45 @@
+SELECT * FROM VGrelease; /*Contains data for platform, release year, genre, publisher*/ 
+
+SELECT * FROM VGsales; /*contains sales data from the 4 different regions and has the global grand total*/
+
+/*Creating a table that combines both tables with specified columns(rank, name, genre, platform, & global sales). Specifiying the franchise 
+Call of Duty in this case.*/
+
+CREATE VIEW NumberOfSalesByEveryCODVersion AS
+SELECT VGrelease.Name,VGrelease.Platform, VGrelease.Year, VGsales.Global_Sales FROM VGrelease
+    JOIN VGsales
+    WHERE VGrelease.Rank = VGsales.Rank 
+        AND VGrelease.Name LIKE '%Call of Duty%'
+    ORDER BY 1, 4 DESC;
+
+/*Goal of this query is to identify at what year did the main line title sales began to drop. This is done similar to the previous case, but
+now using the summation of global sales*/
+
+CREATE VIEW NumberOfSalesByCODTitle AS
+SELECT VGrelease.Name, VGrelease.Year, SUM(VGsales.Global_Sales) AS Total_Title_Sales FROM VGrelease
+    JOIN VGsales
+    WHERE VGrelease.Rank = VGsales.Rank
+        AND VGrelease.Name LIKE '%Call of Duty%'
+    GROUP BY VGrelease.Name
+    ORDER BY 2 ASC;
+    
+/*Lets identify which genre has the most sales in the pasr decade*/
+
+CREATE VIEW NumberOfSalesByGenreInPastDecade AS
+SELECT VGrelease.genre, SUM(VGsales.Global_Sales) AS Global_Sales_By_Millions FROM VGrelease
+    JOIN VGsales
+    WHERE VGrelease.Rank = VGsales.Rank
+        AND VGrelease.Year > 2012
+    GROUP BY VGrelease.Genre
+    ORDER BY 2 DESC;
+    
+/*The goal is to identify the top 10 shooters in order to see if any COD is the dominant shooter*/
+
+CREATE VIEW Top10ShootersBySales AS
+SELECT VGrelease.Name, VGrelease.Publisher, VGrelease.Year, SUM(VGsales.Global_Sales) AS Global_Sales_By_Millions FROM VGrelease
+    JOIN VGsales
+    WHERE VGrelease.Rank = VGsales.Rank
+        AND VGrelease.Genre = 'Shooter'
+    GROUP BY VGrelease.Name
+    ORDER BY 4 DESC
+    LIMIT 10;
